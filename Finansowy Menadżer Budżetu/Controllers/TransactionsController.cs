@@ -9,6 +9,7 @@ using Finansowy_Menadżer_Budżetu.Data;
 using Finansowy_Menadżer_Budżetu.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Hosting;
 
 namespace Finansowy_Menadżer_Budżetu.Controllers
 {
@@ -18,11 +19,13 @@ namespace Finansowy_Menadżer_Budżetu.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IWebHostEnvironment _environment;
 
-        public TransactionsController(ApplicationDbContext context, UserManager<IdentityUser> userManager) 
+        public TransactionsController(ApplicationDbContext context, UserManager<IdentityUser> userManager, IWebHostEnvironment environment)
         {
             _context = context;
             _userManager = userManager;
+            _environment = environment;
         }
 
         // GET: Transactions
@@ -67,13 +70,29 @@ namespace Finansowy_Menadżer_Budżetu.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Date,CategoryId,GroupId,Amount,SharedWith,Comment,Title,FilePatch")] Transactions transactions)
+        public async Task<IActionResult> Create(Transactions transactions)
         {
             IdentityUser użytkownik = _userManager.FindByNameAsync(User.Identity.Name).Result;
             transactions.UserId = użytkownik.Id;
-
+            
             if (ModelState.IsValid)
             {
+                if (transactions.File != null)
+                {
+                    // Przykład: Zapisz plik w katalogu
+                    var sciezkaDoZapisu = Path.Combine(_environment.WebRootPath, "uploads");
+                    var unikalnaNazwaPliku = Guid.NewGuid().ToString() + "_" + transactions.File.FileName;
+                    var sciezkaPelna = Path.Combine(sciezkaDoZapisu, unikalnaNazwaPliku);
+
+                    using (var stream = new FileStream(sciezkaPelna, FileMode.Create))
+                    {
+                        await transactions.File.CopyToAsync(stream);
+                    }
+
+                    // Zapisz informacje o pliku w bazie danych za pomocą Entity Framework
+                    transactions.FilePatch = unikalnaNazwaPliku; // Dodaj właściwość do modelu Produkt
+                    await _context.SaveChangesAsync();
+                }
                 _context.Add(transactions);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
