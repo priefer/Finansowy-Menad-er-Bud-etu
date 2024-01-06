@@ -62,6 +62,8 @@ namespace Finansowy_Menadżer_Budżetu.Controllers
         {
             ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "Id", "Id");
             ViewData["GroupId"] = new SelectList(_context.Set<Group>(), "Id", "Id");
+            ViewData["CategoryName"] = new SelectList(_context.Set<Category>(), "Name", "Name");
+            ViewData["GroupName"] = new SelectList(_context.Set<Group>(), "Name", "Name");
             return View();
         }
 
@@ -70,11 +72,11 @@ namespace Finansowy_Menadżer_Budżetu.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Transactions transactions)
+        public async Task<IActionResult> Create(Transactions transactions, string[] selectedUsers)
         {
             IdentityUser użytkownik = _userManager.FindByNameAsync(User.Identity.Name).Result;
             transactions.UserId = użytkownik.Id;
-            
+
             if (ModelState.IsValid)
             {
                 if (transactions.File != null)
@@ -91,16 +93,20 @@ namespace Finansowy_Menadżer_Budżetu.Controllers
 
                     // Zapisz informacje o pliku w bazie danych za pomocą Entity Framework
                     transactions.FilePatch = unikalnaNazwaPliku; // Dodaj właściwość do modelu Produkt
-                    await _context.SaveChangesAsync();
                 }
+
                 _context.Add(transactions);
                 await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "Id", "Id", transactions.CategoryId);
             ViewData["GroupId"] = new SelectList(_context.Set<Group>(), "Id", "Id", transactions.GroupId);
+
             return View(transactions);
         }
+
 
         // GET: Transactions/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -115,6 +121,7 @@ namespace Finansowy_Menadżer_Budżetu.Controllers
             {
                 return NotFound();
             }
+
             ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "Id", "Id", transactions.CategoryId);
             ViewData["GroupId"] = new SelectList(_context.Set<Group>(), "Id", "Id", transactions.GroupId);
             return View(transactions);

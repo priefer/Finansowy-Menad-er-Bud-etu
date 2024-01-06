@@ -13,7 +13,6 @@ namespace Finansowy_Menadżer_Budżetu.Models
         public int GroupId { get; set; }
         public virtual Group? Group { get; set; }
         public decimal Amount { get; set; }
-        public string? SharedWith { get; set; } // Id użytkowników oddzielone przecinkami
         public string? Comment { get; set; }
         public string Title { get; set; }
         public string? FilePatch { get; set; }

@@ -24,6 +24,7 @@
     <Folder Include="Data\Migrations\" />
     <Folder Include="Migrations\" />
     <Folder Include="wwwroot\Nowy folder\" />
+    <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
 
 </Project>

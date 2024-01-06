@@ -1,7 +1,11 @@
 ﻿@model IEnumerable<Finansowy_Menadżer_Budżetu.Models.Transactions>
 
+@using Microsoft.AspNetCore.Identity
+
+
 @{
     ViewData["Title"] = "Index";
+    var _userManager = ViewData["UserManager"] as UserManager<IdentityUser>;
 }
 
 <h1>Index</h1>
@@ -24,9 +28,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.Amount)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.SharedWith)
-            </th>
+
             <th>
                 @Html.DisplayNameFor(model => model.Comment)
             </th>
@@ -46,16 +48,13 @@
                 @Html.DisplayFor(modelItem => item.Date)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Category.Id)
+                @Html.DisplayFor(modelItem => item.Category.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Group.Id)
+                @Html.DisplayFor(modelItem => item.Group.Name)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Amount)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SharedWith)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Comment)
@@ -64,12 +63,21 @@
                 @Html.DisplayFor(modelItem => item.Title)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.FilePatch)
+                    @if (!string.IsNullOrEmpty(item.FilePatch))
+                    {
+                        <a href="@Url.Action("Index", "Download", new { nazwaPliku = item.FilePatch })">Pobierz plik</a>
+                    }
+                    else
+                    {
+                        <p>Brak pliku do pobrania</p>
+                    }
+
+
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edytuj</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Szczegóły</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Usuń</a>
             </td>
         </tr>
 }
