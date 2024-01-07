@@ -58,7 +58,4 @@
 
 *Kamil Priefer*
 
-## Licencja
 
-Ten projekt jest objęty licencją MIT
----
