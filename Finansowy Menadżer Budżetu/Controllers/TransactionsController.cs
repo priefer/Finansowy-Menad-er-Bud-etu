@@ -60,10 +60,8 @@ namespace Finansowy_Menadżer_Budżetu.Controllers
         // GET: Transactions/Create
         public IActionResult Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "Id", "Id");
-            ViewData["GroupId"] = new SelectList(_context.Set<Group>(), "Id", "Id");
-            ViewData["CategoryName"] = new SelectList(_context.Set<Category>(), "Name", "Name");
-            ViewData["GroupName"] = new SelectList(_context.Set<Group>(), "Name", "Name");
+            ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "Id", "Name");
+            ViewData["GroupId"] = new SelectList(_context.Set<Group>(), "Id", "Name");
             return View();
         }
 
@@ -81,7 +79,7 @@ namespace Finansowy_Menadżer_Budżetu.Controllers
             {
                 if (transactions.File != null)
                 {
-                    // Przykład: Zapisz plik w katalogu
+
                     var sciezkaDoZapisu = Path.Combine(_environment.WebRootPath, "uploads");
                     var unikalnaNazwaPliku = Guid.NewGuid().ToString() + "_" + transactions.File.FileName;
                     var sciezkaPelna = Path.Combine(sciezkaDoZapisu, unikalnaNazwaPliku);
@@ -91,8 +89,7 @@ namespace Finansowy_Menadżer_Budżetu.Controllers
                         await transactions.File.CopyToAsync(stream);
                     }
 
-                    // Zapisz informacje o pliku w bazie danych za pomocą Entity Framework
-                    transactions.FilePatch = unikalnaNazwaPliku; // Dodaj właściwość do modelu Produkt
+                    transactions.FilePatch = unikalnaNazwaPliku;
                 }
 
                 _context.Add(transactions);
@@ -121,9 +118,9 @@ namespace Finansowy_Menadżer_Budżetu.Controllers
             {
                 return NotFound();
             }
-
-            ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "Id", "Id", transactions.CategoryId);
-            ViewData["GroupId"] = new SelectList(_context.Set<Group>(), "Id", "Id", transactions.GroupId);
+            ViewData["CurrentFilePath"] = transactions.FilePatch;
+            ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "Id", "Name", transactions.CategoryId);
+            ViewData["GroupId"] = new SelectList(_context.Set<Group>(), "Id", "Name", transactions.GroupId);
             return View(transactions);
         }
 
@@ -132,8 +129,11 @@ namespace Finansowy_Menadżer_Budżetu.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Date,CategoryId,GroupId,Amount,SharedWith,Comment,Title,FilePatch")] Transactions transactions)
+        public async Task<IActionResult> Edit(int id,Transactions transactions)
         {
+            IdentityUser użytkownik = _userManager.FindByNameAsync(User.Identity.Name).Result;
+            transactions.UserId = użytkownik.Id;
+
             if (id != transactions.Id)
             {
                 return NotFound();
@@ -141,6 +141,31 @@ namespace Finansowy_Menadżer_Budżetu.Controllers
 
             if (ModelState.IsValid)
             {
+                var existingTransaction = await _context.Transactions.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
+                if (existingTransaction == null)
+                {
+                    return NotFound();
+                }
+
+                if (transactions.File != null && !string.Equals(existingTransaction.FilePatch, transactions.File.FileName, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Użytkownik wybrał nowy plik, przetwórz go i zaktualizuj ścieżkę
+                    var sciezkaDoZapisu = Path.Combine(_environment.WebRootPath, "uploads");
+                    var unikalnaNazwaPliku = Guid.NewGuid().ToString() + "_" + transactions.File.FileName;
+                    var sciezkaPelna = Path.Combine(sciezkaDoZapisu, unikalnaNazwaPliku);
+
+                    using (var stream = new FileStream(sciezkaPelna, FileMode.Create))
+                    {
+                        await transactions.File.CopyToAsync(stream);
+                    }
+
+                    transactions.FilePatch = unikalnaNazwaPliku;
+                }
+                else
+                {
+                    // Użytkownik nie wybrał nowego pliku, zachowaj obecną ścieżkę
+                    transactions.FilePatch = existingTransaction.FilePatch;
+                }
                 try
                 {
                     _context.Update(transactions);
@@ -198,7 +223,17 @@ namespace Finansowy_Menadżer_Budżetu.Controllers
             {
                 _context.Transactions.Remove(transactions);
             }
-            
+
+            if (!string.IsNullOrEmpty(transactions.FilePatch))
+            {
+                // Usuń plik z serwera
+                var filePath = Path.Combine(_environment.WebRootPath, "uploads", transactions.FilePatch);
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+            }
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }

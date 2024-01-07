@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using System.IO;
 
 namespace Finansowy_Menadżer_Budżetu.Controllers
 {
+    [Authorize]
     public class Download : Controller
     {
         private readonly IWebHostEnvironment _hostingEnvironment;

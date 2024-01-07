@@ -4,13 +4,12 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+<h1>Edycja</h1>
 
-<h4>Transactions</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
@@ -20,17 +19,17 @@
             </div>
             <div class="form-group">
                 <label asp-for="CategoryId" class="control-label"></label>
-                <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryName"></select>
+                <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
                 <span asp-validation-for="CategoryId" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="GroupId" class="control-label"></label>
-                <select asp-for="GroupId" class="form-control" asp-items="ViewBag.GroupName"></select>
+                <select asp-for="GroupId" class="form-control" asp-items="ViewBag.GroupId"></select>
                 <span asp-validation-for="GroupId" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Amount" class="control-label"></label>
-                <input asp-for="Amount" class="form-control" />
+                <input asp-for="Amount" type="text" step="1" class="form-control" />
                 <span asp-validation-for="Amount" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -44,19 +43,30 @@
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="FilePatch" class="control-label"></label>
-                <input asp-for="FilePatch" class="form-control" />
-                <span asp-validation-for="FilePatch" class="text-danger"></span>
+                <label asp-for="File" class="control-label"></label>
+
+                <!-- Aktualny plik -->
+                @if (!string.IsNullOrEmpty(ViewData["CurrentFilePath"]?.ToString()))
+                {
+                    <p>
+                        <a asp-controller="Transactions" asp-action="DownloadFile" asp-route-filePath="@ViewData["CurrentFilePath"]">Pobierz aktualny plik</a>
+                    </p>
+                }
+
+                <!-- Pole do wyboru nowego pliku -->
+                <input asp-for="File" type="file" class="form-control" />
+                <span asp-validation-for="File" class="text-danger"></span>
             </div>
+
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Zapisz" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Anuluj</a>
 </div>
 
 @section Scripts {

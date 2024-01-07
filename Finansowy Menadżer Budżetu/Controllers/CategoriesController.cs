@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Finansowy_Menadżer_Budżetu.Data;
 using Finansowy_Menadżer_Budżetu.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Finansowy_Menadżer_Budżetu.Controllers
 {
+    [Authorize(Policy = "UserIdPolicy")]
     public class CategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;

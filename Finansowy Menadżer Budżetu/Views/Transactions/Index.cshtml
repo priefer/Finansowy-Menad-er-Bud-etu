@@ -8,10 +8,10 @@
     var _userManager = ViewData["UserManager"] as UserManager<IdentityUser>;
 }
 
-<h1>Index</h1>
+<h1>Transakcje</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create">Dodaj Transakcje</a>
 </p>
 <table class="table">
     <thead>
@@ -80,6 +80,8 @@
                 <a asp-action="Delete" asp-route-id="@item.Id">Usuń</a>
             </td>
         </tr>
-}
+        }
+        
+
     </tbody>
 </table>
