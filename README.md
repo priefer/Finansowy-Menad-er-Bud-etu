@@ -60,6 +60,5 @@
 
 ## Licencja
 
-Ten projekt jest objęty licencją MIT - zobacz plik [LICENSE](LICENSE) dla szczegółów.
-
+Ten projekt jest objęty licencją MIT
 ---
